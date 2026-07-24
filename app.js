@@ -1,3 +1,4 @@
+require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -51,7 +52,7 @@ app.setSocketIo = function(io) {
 
 // --- CONFIGURACIÓN DE SESIONES ---
 app.use(session({
-    secret: 'gomez-moreno-2026-secret',
+    secret: 'cruz-gol-2026-secret',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
