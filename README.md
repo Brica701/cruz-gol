@@ -10,8 +10,9 @@ Markdown
 2. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
 3. [Requisitos Previos](#-requisitos-previos)
 4. [Guía de Instalación y Puesta en Marcha (Para Forks)](#-guía-de-instalación-y-puesta-en-marcha-para-forks)
-5. [Funcionamiento de la Base de Datos](#-funcionamiento-de-la-base-de-datos)
-6. [Estructura del Proyecto](#-estructura-del-proyecto)
+5. [Creación del Usuario Administrador Inicial](#-creación-del-usuario-administrador-inicial)
+6. [Funcionamiento de la Base de Datos](#-funcionamiento-de-la-base-de-datos)
+7. [Estructura del Proyecto](#-estructura-del-proyecto)
 
 ---
 
@@ -76,8 +77,20 @@ npm run dev
 
 ¡Listo! Abre tu navegador y entra en: http://localhost:3000. Al arrancar, la aplicación se conectará a tu base de datos y creará automáticamente todas las tablas necesarias (usuarios, partidos, apuestas, anuncios y chat_mensajes).
 
+👑 Creación del Usuario Administrador Inicial
+Como la base de datos se crea vacía en tu primer arranque, necesitarás un usuario con privilegios de administrador para poder acceder a la plataforma, gestionar la aplicación y dar de alta a nuevos usuarios.
+
+Para crear tu cuenta de administrador, conéctate a tu base de datos PostgreSQL (puedes usar la consola de comandos de tu proveedor como Neon, pgAdmin, DBeaver o el terminal) y ejecuta la siguiente sentencia SQL:
+
+SQL
+INSERT INTO usuarios (nombre, password, rol, creditos) 
+VALUES ('admin', 'tu_contraseña_segura', 'admin', 1000);
+(Asegúrate de cambiar 'admin' y 'tu_contraseña_segura' por el nombre de usuario y contraseña que desees utilizar para iniciar sesión).
+
+Una vez insertado, ya podrás iniciar sesión en http://localhost:3000 con esas credenciales y acceder al panel de administración.
+
 🗄️ Funcionamiento de la Base de Datos
-No necesitas ejecutar scripts SQL de forma manual. Gracias al script de auto-migración incluido en el código (db.js), la primera vez que arranques el servidor se validará y estructurará toda la base de datos por ti.
+No necesitas ejecutar esquemas complejos de forma manual. Gracias al script de auto-migración incluido en el código (db.js), la primera vez que arranques el servidor se validará y estructurará toda la base de datos por ti.
 
 📂 Estructura del Proyecto
 Plaintext
