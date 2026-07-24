@@ -1,18 +1,19 @@
 Markdown
 # ⚽ Cruz-Gol (2026)
 
-**Cruz-Gol** es una plataforma web completa e interactiva para la gestión de porras, quinielas y apuestas deportivas entre usuarios. Incluye actualización de partidos mediante API externa, comunicación en tiempo real y persistencia de datos en PostgreSQL.
+**Cruz-Gol** es una plataforma web completa e interactiva para la gestión de porras, quinielas y apuestas deportivas entre usuarios. Incluye actualización de partidos mediante API externa, comunicación en tiempo real y persistencia de datos en PostgreSQL. Está completamente preparada para ser desplegada en la nube (como **Render**), evitando depender únicamente del entorno local.
 
 ---
 
 ## 📋 Tabla de Contenidos
 1. [Características Principales](#-características-principales)
-2. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
+2. [Tecnologías Utilizadas](#-technologies-utilizadas)
 3. [Requisitos Previos](#-requisitos-previos)
-4. [Guía de Instalación y Puesta en Marcha (Para Forks)](#-guía-de-instalación-y-puesta-en-marcha-para-forks)
-5. [Creación del Usuario Administrador Inicial](#-creación-del-usuario-administrador-inicial)
-6. [Funcionamiento de la Base de Datos](#-funcionamiento-de-la-base-de-datos)
-7. [Estructura del Proyecto](#-estructura-del-proyecto)
+4. [Guía de Instalación y Puesta en Marcha (Entorno Local)](#-guía-de-instalación-y-puesta-en-marcha-entorno-local)
+5. [Despliegue en la Nube (Render)](#-despliegue-en-la-nube-render)
+6. [Primer Inicio y Creación del Usuario Administrador](#-primer-inicio-y-creación-del-usuario-administrador)
+7. [Funcionamiento de la Base de Datos](#-funcionamiento-de-la-base-de-datos)
+8. [Estructura del Proyecto](#-estructura-del-proyecto)
 
 ---
 
@@ -29,10 +30,11 @@ Markdown
 ## 🛠️ Tecnologías Utilizadas
 
 * **Backend:** Node.js, Express.js
-* **Base de Datos:** PostgreSQL (con la librería `pg` / soporte para Neon DB)
+* **Base de Datos:** PostgreSQL (con la librería `pg` / soporte para Neon DB o Render Postgres)
 * **Tiempo Real:** Socket.io
 * **Frontend:** EJS (Embedded JavaScript Templates), CSS3, JavaScript (ES6+)
 * **Gestión de Entorno:** `dotenv`
+* **Despliegue:** Preparado para **Render**
 
 ---
 
@@ -45,9 +47,9 @@ Antes de comenzar, asegúrate de tener instalado en tu equipo:
 
 ---
 
-## ⚙️ Guía de Instalación y Puesta en Marcha (Para Forks)
+## ⚙️ Guía de Instalación y Puesta en Marcha (Entorno Local)
 
-Si has hecho un fork de este repositorio y quieres ponerlo a funcionar con tu propia base de datos, sigue estos **4 pasos**:
+Si has hecho un fork de este repositorio y quieres probarlo en tu máquina local, sigue estos **4 pasos**:
 
 ### 1️⃣ Clonar el repositorio
 Abre tu terminal y clona el proyecto en tu máquina local:
@@ -77,20 +79,42 @@ npm run dev
 
 ¡Listo! Abre tu navegador y entra en: http://localhost:3000. Al arrancar, la aplicación se conectará a tu base de datos y creará automáticamente todas las tablas necesarias (usuarios, partidos, apuestas, anuncios y chat_mensajes).
 
-👑 Creación del Usuario Administrador Inicial
-Como la base de datos se crea vacía en tu primer arranque, necesitarás un usuario con privilegios de administrador para poder acceder a la plataforma, gestionar la aplicación y dar de alta a nuevos usuarios.
+☁️ Despliegue en la Nube (Render)
+El proyecto está totalmente adaptado para funcionar en la nube y olvidarte de tenerlo ejecutándose en local. Para subirlo a Render:
 
-Para crear tu cuenta de administrador, conéctate a tu base de datos PostgreSQL (puedes usar la consola de comandos de tu proveedor como Neon, pgAdmin, DBeaver o el terminal) y ejecuta la siguiente sentencia SQL:
+Sube tu repositorio (o tu fork) a tu cuenta de GitHub.
+
+Entra en tu panel de Render y haz clic en New + -> Web Service.
+
+Conecta tu repositorio de GitHub de Cruz-Gol.
+
+Configura los siguientes parámetros del servicio:
+
+Build Command: npm install
+
+Start Command: npm start
+
+En la sección de Environment Variables (Variables de entorno), añade:
+
+DATABASE_URL: La URL de conexión de tu base de datos PostgreSQL en la nube (por ejemplo, la de Neon o la propia base de datos PostgreSQL interna de Render).
+
+Haz clic en Create Web Service. Render compilará tu aplicación y te asignará una URL pública en línea 24/7.
+
+👑 Primer Inicio y Creación del Usuario Administrador
+Como la base de datos se crea vacía en el primer arranque, el sistema no tiene ningún usuario registrado todavía.
+
+Para poder acceder a la plataforma por primera vez, debes crear un usuario con rol de administrador directamente en tu base de datos PostgreSQL (puedes usar la consola de tu proveedor como Neon, pgAdmin, DBeaver o la terminal de comandos) ejecutando la siguiente sentencia SQL:
 
 SQL
 INSERT INTO usuarios (nombre, password, rol, creditos) 
 VALUES ('admin', 'tu_contraseña_segura', 'admin', 1000);
-(Asegúrate de cambiar 'admin' y 'tu_contraseña_segura' por el nombre de usuario y contraseña que desees utilizar para iniciar sesión).
+(Cambia 'admin' y 'tu_contraseña_segura' por las credenciales que prefieras).
 
-Una vez insertado, ya podrás iniciar sesión en http://localhost:3000 con esas credenciales y acceder al panel de administración.
+👥 Gestión y creación del resto de usuarios
+Una vez que inicies sesión con tu cuenta de administrador, tendrás acceso exclusivo al Panel de Administración. Desde ese apartado, el administrador será el encargado de ir creando y dando de alta al resto de usuarios que participarán en la plataforma.
 
 🗄️ Funcionamiento de la Base de Datos
-No necesitas ejecutar esquemas complejos de forma manual. Gracias al script de auto-migración incluido en el código (db.js), la primera vez que arranques el servidor se validará y estructurará toda la base de datos por ti.
+No necesitas ejecutar esquemas complejos de forma manual. Gracias al script de auto-migración incluido en el código (db.js), la primera vez que arranques el servidor (tanto en local como en Render) se validará y estructurará toda la base de datos automáticamente por ti.
 
 📂 Estructura del Proyecto
 Plaintext
