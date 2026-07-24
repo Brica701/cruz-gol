@@ -97,57 +97,61 @@ async function ejecutarRepartoAutomatico(id_partido, resA, resB) {
 }
 
 // --- FUNCIÓN PRINCIPAL DE SINCRONIZACIÓN ---
-// --- FUNCIÓN PRINCIPAL DE SINCRONIZACIÓN ---
 async function sincronizarPartidos() {
-    try {
-        const response = await axios.get(`https://api.football-data.org/v4/competitions/WC/matches`, {
-            headers: { 'X-Auth-Token': API_TOKEN }
-        });
+    // Códigos en football-data.org: 'PD' = Primera División (La Liga), 'CL' = UEFA Champions League
+    const competiciones = ['PD', 'CL'];
+    const temporada = 2026; // Temporada 2026/2027
 
-        const partidos = response.data.matches;
+    for (const competition of competiciones) {
+        try {
+            const response = await axios.get(`https://api.football-data.org/v4/competitions/${competition}/matches?season=${temporada}`, {
+                headers: { 'X-Auth-Token': API_TOKEN }
+            });
 
-        for (const p of partidos) {
-            const id_externo = p.id.toString();
+            const partidos = response.data.matches;
 
-            const { rows } = await db.query('SELECT estado, resultado_a, resultado_b FROM partidos WHERE id = $1', [id_externo]);
-            const pActual = rows[0];
+            for (const p of partidos) {
+                const id_externo = p.id.toString();
 
-            const goles_a = p.score.fullTime.home;
-            const goles_b = p.score.fullTime.away;
+                const { rows } = await db.query('SELECT estado, resultado_a, resultado_b FROM partidos WHERE id = $1', [id_externo]);
+                const pActual = rows[0];
 
-            let estadoFinal = 'abierto';
-            if (p.status === 'FINISHED' || p.status === 'AWARDED') estadoFinal = 'finalizado';
-            else if (p.status === 'IN_PLAY' || p.status === 'LIVE') estadoFinal = 'en_vivo';
+                const goles_a = p.score.fullTime.home;
+                const goles_b = p.score.fullTime.away;
 
-            const resA = goles_a !== null ? goles_a : (pActual?.resultado_a || 0);
-            const resB = goles_b !== null ? goles_b : (pActual?.resultado_b || 0);
+                let estadoFinal = 'abierto';
+                if (p.status === 'FINISHED' || p.status === 'AWARDED') estadoFinal = 'finalizado';
+                else if (p.status === 'IN_PLAY' || p.status === 'LIVE') estadoFinal = 'en_vivo';
 
-            // --- CORRECCIÓN: Protección contra nulos en fases eliminatorias ---
-            const nombreA = p.homeTeam ? p.homeTeam.shortName : "TBD (Ganador)";
-            const nombreB = p.awayTeam ? p.awayTeam.shortName : "TBD (Ganador)";
-            const idApiA = p.homeTeam ? p.homeTeam.id : null;
-            const idApiB = p.awayTeam ? p.awayTeam.id : null;
-            // ------------------------------------------------------------------
+                const resA = goles_a !== null ? goles_a : (pActual?.resultado_a || 0);
+                const resB = goles_b !== null ? goles_b : (pActual?.resultado_b || 0);
 
-            await db.query(`
-                INSERT INTO partidos (id, equipo_a, equipo_b, id_api_a, id_api_b, fecha_partido, resultado_a, resultado_b, estado)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                ON CONFLICT (id) DO UPDATE SET
-                resultado_a = EXCLUDED.resultado_a,
-                resultado_b = EXCLUDED.resultado_b,
-                estado = EXCLUDED.estado,
-                equipo_a = EXCLUDED.equipo_a,
-                equipo_b = EXCLUDED.equipo_b
-            `, [id_externo, nombreA, nombreB, idApiA, idApiB, p.utcDate, resA, resB, estadoFinal]);
+                // --- Protección contra nulos en fases eliminatorias ---
+                const nombreA = p.homeTeam ? p.homeTeam.shortName : "TBD (Ganador)";
+                const nombreB = p.awayTeam ? p.awayTeam.shortName : "TBD (Ganador)";
+                const idApiA = p.homeTeam ? p.homeTeam.id : null;
+                const idApiB = p.awayTeam ? p.awayTeam.id : null;
+                // ------------------------------------------------------------------
 
-            if (estadoFinal === 'finalizado' && (pActual?.estado !== 'finalizado') && goles_a !== null) {
-                await ejecutarRepartoAutomatico(id_externo, resA, resB);
+                await db.query(`
+                    INSERT INTO partidos (id, equipo_a, equipo_b, id_api_a, id_api_b, fecha_partido, resultado_a, resultado_b, estado)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                    ON CONFLICT (id) DO UPDATE SET
+                    resultado_a = EXCLUDED.resultado_a,
+                    resultado_b = EXCLUDED.resultado_b,
+                    estado = EXCLUDED.estado,
+                    equipo_a = EXCLUDED.equipo_a,
+                    equipo_b = EXCLUDED.equipo_b
+                `, [id_externo, nombreA, nombreB, idApiA, idApiB, p.utcDate, resA, resB, estadoFinal]);
+
+                if (estadoFinal === 'finalizado' && (pActual?.estado !== 'finalizado') && goles_a !== null) {
+                    await ejecutarRepartoAutomatico(id_externo, resA, resB);
+                }
             }
+        } catch (error) {
+            console.error(`❌ Error en sincronización para la competición ${competition}:`, error.response?.data?.message || error.message);
         }
-    } catch (error) {
-        console.error("❌ Error en sincronización:", error.response?.data?.message || error.message);
     }
-
 }
 
 module.exports = sincronizarPartidos;
