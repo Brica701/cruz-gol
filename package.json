@@ -27,5 +27,19 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
-  }
+  },
+  "description": "",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brica701/gomez-gol.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Brica701/gomez-gol/issues"
+  },
+  "homepage": "https://github.com/Brica701/gomez-gol#readme"
 }
