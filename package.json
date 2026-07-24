@@ -27,7 +27,7 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.14"
   },
   "description": "",
   "main": "app.js",
